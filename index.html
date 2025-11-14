@@ -1,0 +1,1017 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>The Culture Keeper — Cute Microbes (Expanded)</title>
+<style>
+  /* Reset + base */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --bg1: #fff7fb;
+    --bg2: #e6fbff;
+    --accent: #ff6fb3;
+    --accent-2: #6bd66b;
+    --navy: #0f172a;
+    --soft: #fff;
+  }
+  html,body{ height:100%; }
+  body{
+    height:100%;
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(180deg, var(--bg1), var(--bg2));
+    padding:16px;
+    overflow:hidden; /* prevents scroll */
+  }
+  
+  /* NEW: Screen Wrappers */
+  .screen-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  
+  .menu-card {
+    width: min(700px, 90vw);
+    background: linear-gradient(180deg,#ffffff,#fffafc);
+    border-radius: 22px;
+    box-shadow: 0 20px 50px rgba(11,20,40,0.12);
+    padding: 32px 40px;
+    text-align: center;
+  }
+  
+  .menu-card h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: var(--navy);
+    letter-spacing: -0.8px;
+    margin-bottom: 24px;
+  }
+  
+  .menu-card h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 20px;
+  }
+
+  .menu-card .button-group {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+  
+  .menu-card .instructions {
+    text-align: left;
+    color: #3f5566;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 10px;
+  }
+  
+  .menu-card .instructions ul {
+    list-style-position: inside;
+    margin-left: 8px;
+    padding-left: 0;
+  }
+  
+  .menu-card .instructions li {
+    margin-bottom: 12px;
+  }
+  
+  .menu-card .instructions strong {
+    color: var(--navy);
+    font-weight: 700;
+  }
+
+
+  /* Game wrapper - fits viewport */
+  .game-wrapper{
+    width: min(1100px, 95vw);
+    height: min(760px, 95vh);
+    background: linear-gradient(180deg,#ffffff,#fffafc);
+    border-radius: 22px;
+    box-shadow: 0 20px 50px rgba(11,20,40,0.12);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    gap: 20px;
+    padding: 22px;
+  }
+
+  /* Floating cute microbes (inline svgs will be used) */
+  .microbe {
+    position: absolute;
+    width: 76px;
+    opacity: 0.9;
+    pointer-events: none;
+    transform-origin: center;
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.08));
+  }
+  .m1 { left: 22px; top: 18px; animation: float1 6s ease-in-out infinite; transform: rotate(6deg); }
+  .m2 { right: 18px; bottom: 26px; width: 58px; animation: float2 7s ease-in-out infinite; transform: rotate(-6deg); }
+  .m3 { left: 14%; bottom: 18%; width: 66px; animation: float3 5.4s linear infinite; opacity:0.85; }
+  .m4 { right: 12%; top: 10%; width: 52px; animation: float1 8s ease-in-out infinite; opacity:0.8; }
+
+
+  @keyframes float1{ 0%{transform:translateY(0) scale(1);} 50%{transform:translateY(-18px) scale(1.04);} 100%{transform:translateY(0) scale(1);} }
+  @keyframes float2{ 0%{transform:translateY(0) scale(1);} 50%{transform:translateY(-28px) scale(1.06);} 100%{transform:translateY(0) scale(1);} }
+  @keyframes float3{ 0%{transform:translateY(0) rotate(-6deg);} 50%{transform:translateY(-22px) rotate(-2deg);} 100%{transform:translateY(0) rotate(-6deg);} }
+
+  /* Left panel (flask) */
+  .left-panel{
+    width: 42%;
+    min-width: 340px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position: relative;
+  }
+
+  /* Cute flask styling */
+  .flask-wrap{
+    width: 260px;
+    height: 360px;
+    position: relative;
+  }
+  .flask-svg{
+    width:100%; height:100%; display:block;
+  }
+
+  /* Culture cloud overlay inside flask - animate opacity & bubble growth */
+  .culture-cloud{
+    position:absolute;
+    left:12px; right:12px; bottom:18px;
+    height: 74%;
+    border-radius: 0 0 140px 140px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0.12));
+    transition: all .35s ease;
+    overflow:visible;
+    z-index:2;
+  }
+  .bubble {
+    position:absolute;
+    border-radius: 50%;
+    opacity: .95;
+    background: rgba(255,255,255,0.55);
+    transform: translateY(0) scale(0.6);
+    animation: popUp 2.6s ease-in-out infinite;
+  }
+  .bubble.b1{ width:12px; height:12px; left:22%; bottom:12%; animation-delay:0s; }
+  .bubble.b2{ width:10px; height:10px; left:48%; bottom:20%; animation-delay:.6s; }
+  .bubble.b3{ width:8px; height:8px; left:68%; bottom:10%; animation-delay:1.2s; }
+
+  @keyframes popUp {
+    0%{ transform: translateY(0) scale(0.6); opacity:0; }
+    20%{ transform: translateY(-8px) scale(1); opacity:1; }
+    70%{ transform: translateY(-46px) scale(.9); opacity:.7; }
+    100%{ transform: translateY(-70px) scale(.4); opacity:0; }
+  }
+
+  /* Right panel (stats + controls) */
+  .right-panel{
+    width: 58%;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    padding:8px 10px;
+    max-height: 100%; /* Ensure right panel doesn't overflow wrapper */
+  }
+
+  .title-row{
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+  .logo {
+    width:74px; height:74px; border-radius:14px;
+    background:linear-gradient(135deg, rgba(255,111,179,0.12), rgba(107,214,107,0.06));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 18px rgba(255,111,179,0.07);
+    flex-shrink: 0;
+  }
+  .title {
+    font-size:1.9rem; font-weight:800; color:var(--navy);
+    letter-spacing: -0.6px;
+  }
+  .subtitle { color:#5b6b7b; font-weight:600; font-size:.95rem; margin-top:6px; }
+
+  .panel {
+    background: linear-gradient(180deg,#fff,#fff9fd);
+    border-radius:14px;
+    padding:14px;
+    box-shadow:0 10px 22px rgba(11,20,40,0.04);
+    flex-shrink: 0; /* Prevent panels from shrinking */
+  }
+
+  .metrics {
+    display:flex;
+    gap:14px;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .metric {
+    flex:1;
+    min-width:0;
+  }
+  .metric h4 { font-size:.95rem; color:#465568; margin-bottom:8px; font-weight:700; }
+  .meter {
+    height:18px; border-radius:999px; background:#f0f2f6; overflow:hidden;
+  }
+  .meter-fill { height:100%; transition: width .45s ease; border-radius:999px; }
+
+  .meter-label { margin-top:8px; font-size:.92rem; color:#22303a; font-weight:700; text-align:center; }
+
+  .controls {
+    display:flex; gap:12px; margin-top:12px; flex-wrap:wrap;
+  }
+  .control-btn {
+    background:linear-gradient(180deg,#ffe6f2,#ffbcd9);
+    border:none; padding:12px 18px; border-radius:12px; cursor:pointer;
+    font-weight:700; color: #141926; box-shadow: 0 8px 16px rgba(255,111,179,0.08);
+    transition: transform .14s ease, box-shadow .14s ease;
+  }
+  .control-btn.primary { background: linear-gradient(180deg,#ffd9f0,#ff80bf); }
+  .control-btn.success { background: linear-gradient(180deg,#c9ffd9,#6bd66b); }
+  .control-btn.warning { background: linear-gradient(180deg,#fff3cc,#ffd36b); }
+  .control-btn:active, .control-btn:disabled { transform: translateY(2px); box-shadow: 0 6px 10px rgba(0,0,0,0.06); }
+  .control-btn:disabled { background: #e0e4e8; color: #8899aa; cursor: not-allowed; }
+
+
+  .phase-box {
+    margin-top:12px;
+    display:flex; align-items:center; gap:12px; justify-content:space-between;
+  }
+  .phase {
+    font-weight:900; color:var(--navy); font-size:1.15rem;
+  }
+  .info { color:#3f5566; font-weight:600; font-size:.95rem; }
+
+  /* small note / fun fact */
+  .fun {
+    margin-top:8px; color:#6a7180; font-size:.87rem;
+  }
+
+  /* NEW: Event Log Panel */
+  .log-feed-wrapper {
+    margin-top: 8px;
+    flex: 1;
+    overflow-y: auto; /* Make it scrollable */
+    background: #fdfdff;
+    border-radius: 8px;
+    border: 1px solid #f0f2f6;
+    padding: 8px;
+    font-size: 0.85rem;
+    min-height: 100px; /* Ensure it has some height */
+  }
+  .log-message {
+    padding: 4px 0;
+    border-bottom: 1px dashed #eef;
+    color: #4b5563;
+  }
+  .log-message.event { font-weight: 700; color: #8b5cf6; }
+  .log-message.good { font-weight: 700; color: #16a34a; }
+  .log-message.bad { font-weight: 700; color: #dc2626; }
+
+
+  /* Modal styles */
+  .modal-backdrop {
+    position: fixed; inset:0; background: rgba(6,10,20,0.35);
+    display: none; align-items:center; justify-content:center; z-index:40;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .modal-backdrop.visible {
+    display: flex;
+    opacity: 1;
+  }
+  
+  .modal {
+    width: min(680px,92vw); background: #fff; border-radius:14px; padding:18px;
+    box-shadow: 0 20px 60px rgba(4,8,20,0.3);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+  }
+  .modal-backdrop.visible .modal {
+    transform: scale(1);
+  }
+
+  .modal h3 { color:var(--navy); font-size:1.15rem; margin-bottom:10px; }
+  .options { display:flex; flex-direction:column; gap:12px; margin-top:10px; }
+  .opt-btn {
+    padding:12px 14px; border-radius:12px; border:none; cursor:pointer; text-align:left;
+    background: linear-gradient(180deg,#fff,#fafafa); box-shadow:0 6px 18px rgba(4,8,20,0.04);
+    font-weight:700;
+    transition: all 0.15s ease;
+  }
+  .opt-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:0 8px 20px rgba(4,8,20,0.07);
+  }
+  .opt-btn:disabled {
+    background: #f0f2f6;
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  .opt-btn.correct { background: linear-gradient(180deg,#e8fff0,#ccffdf); border: 2px solid #b9f0c4; color:#0b5c2b;}
+  .opt-btn.wrong { background: linear-gradient(180deg,#fff3f3,#ffdede); border:2px solid #f3c3c3; color:#7a1b1b; }
+  .modal .result { margin-top:12px; font-weight:800; font-size:1rem; text-align:center; }
+  .modal .result-box {
+    padding:8px; border-radius:8px; font-weight:800;
+    margin-top: 10px;
+  }
+  .modal .result-box.good { background:#e9fff0; color:#0b5c2b; }
+  .modal .result-box.bad { background:#fff3f3; color:#7a1b1b; }
+
+
+  /* small responsive handling */
+  @media (max-width:960px){
+    .game-wrapper{ flex-direction: column; height: 95vh; width: 96vw; padding:16px; gap: 10px; }
+    .left-panel, .right-panel { width:100%; max-height: 50%; }
+    .left-panel{ display:flex; justify-content:center; align-items:center; height:46%; min-height: 280px; }
+    .right-panel{ height:54%; overflow-y:auto; padding-right:6px; gap: 10px; }
+    .microbe{ display:none; } /* hide floating svgs to save space */
+    .title { font-size: 1.5rem; }
+    .control-btn { padding: 10px 14px; font-size: 0.9rem; }
+    .menu-card h1 { font-size: 2.2rem; }
+    .menu-card h2 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NEW: Start Screen -->
+<div id="startScreen" class="screen-wrapper" style="display: flex;">
+  <div class="menu-card">
+    <h1>The Culture Keeper</h1>
+    <p style="font-size: 1.1rem; color: #3f5566;">A cute microbe simulation game.</p>
+    <div class="button-group">
+      <button class="control-btn success" id="playBtn" style="padding: 14px 28px; font-size: 1.1rem;">🧪 Play Game</button>
+      <button class="control-btn" id="howToPlayBtn">ℹ How to Play</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW: How to Play Screen -->
+<div id="howToPlayScreen" class="screen-wrapper" style="display: none;">
+  <div class="menu-card">
+    <h2>How to Play</h2>
+    <div class="instructions">
+      <ul>
+        <li><strong>Goal:</strong> Grow your bacterial culture from the Lag Phase to the Stationary Phase and then harvest it to get the highest score.</li>
+        <li><strong>Controls:</strong>
+          <ul>
+            <li><strong>Wait (Advance 1 Hour):</strong> This is your main action. It advances time, consumes nutrients, and produces waste.</li>
+            <li><strong>Add Nutrients:</strong> Click this to take a quick quiz. Answer correctly to refill nutrients to 100%. Use this to avoid the Death Phase!</li>
+            <li><strong>Harvest Culture:</strong> This button becomes active during the Stationary Phase. Click it to end the game and get your score.</li>
+          </ul>
+        </li>
+        <li><strong>Phases:</strong>
+          <ul>
+            <li><strong>Lag Phase:</strong> Bacteria are adapting. Click "Wait" 3 times to begin.</li>
+            <li><strong>Log Phase:</strong> Exponential growth! Nutrients are consumed quickly, and waste is produced.</li>
+            <li><strong>Stationary Phase:</strong> Nutrients are low, or waste is high. Growth stops. This is the time to harvest!</li>
+            <li><strong>Death Phase:</strong> If you run out of nutrients or wait too long in the Stationary Phase, your culture will die. Game Over.</li>
+          </ul>
+        </li>
+        <li><strong>Random Events:</strong>
+          <ul>
+            <li>During the Log Phase, random events like <strong>Contamination</strong> or <strong>Phage Attacks</strong> can occur.</li>
+            <li>Read the prompts carefully and choose the best option to save your culture! Making the wrong choice can have bad penalties.</li>
+          </ul>
+        </li>
+        <li><strong>Scoring:</strong>
+          <ul>
+            <li>Your score is based on harvesting successfully.</li>
+            <li>You get penalties for taking too many hours and producing too much waste. Be efficient!</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="button-group">
+      <button class="control-btn primary" id="backBtn">Back to Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW: Game Container (hidden by default) -->
+<div id="gameContainer" style="display: none;">
+  <div class="game-wrapper" role="application" aria-label="The Culture Keeper game">
+    <!-- floating microbes (svg icons embedded) -->
+    <svg class="microbe m1" viewBox="0 0 120 120" aria-hidden="true">
+      <g>
+        <circle cx="60" cy="60" r="36" fill="#ffd1ea" />
+        <circle cx="52" cy="54" r="6" fill="#fff" opacity="0.9"/>
+        <circle cx="72" cy="48" r="8" fill="#ff80bf"/>
+        <path d="M40 65c8 4 24 8 40-2" stroke="#ff4da6" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+      </g>
+    </svg>
+    <svg class="microbe m2" viewBox="0 0 120 120" aria-hidden="true">
+      <g>
+        <rect x="10" y="24" width="100" height="72" rx="36" fill="#eafff0" />
+        <circle cx="46" cy="64" r="8" fill="#6bd66b"/>
+        <circle cx="74" cy="50" r="6" fill="#b8ffd0"/>
+        <path d="M30 42c12-6 40-6 62 4" stroke="#7ee089" stroke-width="3" fill="none" opacity="0.9"/>
+      </g>
+    </svg>
+    <svg class="microbe m3" viewBox="0 0 120 120" aria-hidden="true">
+      <g>
+        <circle cx="60" cy="60" r="36" fill="#fff2e6" />
+        <circle cx="45" cy="70" r="6" fill="#ffd08a"/>
+        <circle cx="74" cy="58" r="7" fill="#ffb36b"/>
+        <path d="M48 44c8-4 20-10 36 2" stroke="#ff9a42" stroke-width="3" fill="none" opacity="0.85"/>
+      </g>
+    </svg>
+    <svg class="microbe m4" viewBox="0 0 120 120" aria-hidden="true">
+      <g>
+        <path d="M60 24 C 80 24 96 40 96 60 C 96 80 80 96 60 96 C 40 96 24 80 24 60 C 24 40 40 24 60 24 Z" fill="#e6f7ff" />
+        <circle cx="50" cy="50" r="6" fill="#fff"/>
+        <circle cx="70" cy="60" r="8" fill="#80dfff"/>
+        <path d="M40 70 Q 60 80 80 70" stroke="#00c0ff" stroke-width="3" fill="none" opacity="0.7"/>
+      </g>
+    </svg>
+
+    <!-- left: flask visual -->
+    <div class="left-panel" aria-hidden="true">
+      <div class="flask-wrap" aria-hidden="true">
+        <!-- simple SVG flask for nice border -->
+        <svg class="flask-svg" viewBox="0 0 260 360" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <!-- neck -->
+          <rect x="110" y="6" rx="8" width="40" height="58" fill="#fff"/>
+          <rect x="108" y="4" width="44" height="62" rx="10" fill="url(#g1)" stroke="rgba(107,214,107,0.95)" stroke-width="6"/>
+          <!-- body -->
+          <path d="M36 80 Q36 170 90 270 Q130 330 130 330 Q130 330 170 270 Q224 170 224 80 z" fill="#cffecc" stroke="rgba(107,214,107,0.95)" stroke-width="6"/>
+          <defs>
+            <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#fff" stop-opacity="0.95"/>
+              <stop offset="1" stop-color="#fff" stop-opacity="0.6"/>
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <!-- culture cloud overlay (absolute) -->
+        <div class="culture-cloud" id="cultureCloud" aria-hidden="true" style="background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.15));">
+          <!-- animated bubbles -->
+          <div class="bubble b1"></div>
+          <div class="bubble b2"></div>
+          <div class="bubble b3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- right: stats and controls -->
+    <div class="right-panel">
+      <div class="title-row">
+        <div class="logo" aria-hidden="true">
+          <!-- small petri dish svg -->
+          <svg width="46" height="46" viewBox="0 0 64 64" aria-hidden="true">
+            <circle cx="32" cy="32" r="28" fill="#fff0f8" stroke="#ffd9f0" stroke-width="2"/>
+            <circle cx="24" cy="30" r="6" fill="#ffbfdc"/>
+            <circle cx="38" cy="22" r="4" fill="#ffe6f2"/>
+            <circle cx="40" cy="38" r="3" fill="#ffd9f0"/>
+          </svg>
+        </div>
+        <div>
+          <div class="title">The Culture Keeper</div>
+          <div class="subtitle">Cute microbes • Learn by playing</div>
+          <div class="fun">Tip: Answer quizzes to refill nutrients!</div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:8px;">
+        <div class="metrics">
+          <div class="metric" aria-live="polite">
+            <h4>Nutrient Level</h4>
+            <div class="meter" aria-label="Nutrient level"><div id="nutriFill" class="meter-fill" style="width:100%; background: linear-gradient(90deg,#8ef0a6,#6bd66b);"></div></div>
+            <div class="meter-label" id="nutriLabel">100%</div>
+          </div>
+
+          <div class="metric" aria-live="polite">
+            <h4>Waste Level</h4>
+            <div class="meter" aria-label="Waste level"><div id="wasteFill" class="meter-fill" style="width:0%; background: linear-gradient(90deg,#ffd0d0,#ff6666);"></div></div>
+            <div class="meter-label" id="wasteLabel">0%</div>
+          </div>
+        </div>
+
+        <div class="phase-box" style="margin-top:12px;">
+          <div>
+            <div class="phase" id="phaseDisplay">Lag Phase</div>
+            <div class="info" id="phaseInfo">Bacteria are adapting...</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:800; color:#4b5563;">Hour: <span id="hourCounter">0</span></div>
+            <div style="font-weight:800; color:var(--accent); margin-top:4px;" aria-live="polite">Score: <span id="scoreDisplay">0</span></div>
+          </div>
+        </div>
+
+        <div class="controls" style="margin-top:14px;">
+          <button class="control-btn primary" id="waitBtn" title="Advance time">🕐 Wait (Advance 1 Hour)</button>
+          <button class="control-btn success" id="addBtn" title="Answer a quick quiz to refresh nutrients">💧 Add Nutrients</button>
+          <button class="control-btn warning" id="harvestBtn" title="Harvest culture during Stationary Phase to get a score">🏆 Harvest Culture</button>
+          <button class="control-btn" id="resetBtn" title="Reset the game">🔄 Reset</button>
+        </div>
+      </div>
+
+      <!-- NEW: Event Log Panel -->
+      <div class="panel" style="margin-top:10px; flex: 1; min-height: 150px; display: flex; flex-direction: column;">
+        <strong>Event Log</strong>
+        <div class="log-feed-wrapper" id="logFeedWrapper" aria-live="polite">
+          <!-- Log messages will be dynamically added here -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div> <!-- End of #gameContainer -->
+
+
+<!-- Quiz Modal -->
+<div class="modal-backdrop" id="quizBackdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="quizTitle">
+  <div class="modal" role="document">
+    <h3 id="quizTitle">🧪 Micro Quiz</h3>
+    <div id="quizQuestion" style="font-weight:800; color:#334155;">Question will appear here</div>
+    <div class="options" id="quizOptions" style="margin-top:14px;"></div>
+    <div class="result" id="quizResult"></div>
+    <div style="display:flex; justify-content:center; gap: 12px; margin-top:12px;">
+      <button class="control-btn" id="closeQuiz">Close</button>
+      <!-- NEW: Main Menu button for end-game modals -->
+      <button class="control-btn primary" id="modalMainMenuBtn" style="display:none;">Main Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Contamination Modal -->
+<div class="modal-backdrop" id="contamBackdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="contamTitle">
+  <div class="modal" role="document">
+    <h3 id="contamTitle">🦠 Contamination!</h3>
+    <div style="font-weight:800; margin-top:8px;">A stray fungus is spotted in the flask. What will you do?</div>
+    <div class="options" id="contamOptions" style="margin-top:12px;">
+      <button class="opt-btn" onclick="handleContam('antifungal')">A) Add an antifungal agent</button>
+      <button class="opt-btn" onclick="handleContam('antibacterial')">B) Add an antibacterial agent</button>
+      <button class="opt-btn" onclick="handleContam('ignore')">C) Ignore it</button>
+    </div>
+    <div class="result" id="contamResult"></div>
+  </div>
+</div>
+
+<!-- NEW: Phage Attack Modal -->
+<div class="modal-backdrop" id="phageBackdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="phageTitle">
+  <div class="modal" role="document">
+    <h3 id="phageTitle">🔬 Phage Attack!</h3>
+    <div style="font-weight:800; margin-top:8px;">A bacteriophage is detected, infecting your culture! What's the plan?</div>
+    <div class="options" id="phageOptions" style="margin-top:12px;">
+      <button class="opt-btn" onclick="handlePhage('serum')">A) Add anti-phage serum</button>
+      <button class="opt-btn" onclick="handlePhage('mutate')">B) Try to induce mutation (Risky)</button>
+      <button class="opt-btn" onclick="handlePhage('ignore')">C) Ignore it</button>
+    </div>
+    <div class="result" id="phageResult"></div>
+  </div>
+</div>
+
+
+<script>
+  // ---- Game State ----
+  const state = {
+    phase: 'Lag Phase',
+    hour: 0,
+    nutrient: 100,
+    waste: 0,
+    lagClicks: 0,
+    stationaryClicks: 0,
+    eventActive: false,
+    gameOver: false,
+    score: 0
+  };
+
+  // ---- Elements ----
+  
+  // Game Elements
+  const nutriFill = document.getElementById('nutriFill');
+  const wasteFill = document.getElementById('wasteFill');
+  const nutriLabel = document.getElementById('nutriLabel');
+  const wasteLabel = document.getElementById('wasteLabel');
+  const phaseDisplay = document.getElementById('phaseDisplay');
+  const phaseInfo = document.getElementById('phaseInfo');
+  const hourCounter = document.getElementById('hourCounter');
+  const cultureCloud = document.getElementById('cultureCloud');
+  const waitBtn = document.getElementById('waitBtn');
+  const addBtn = document.getElementById('addBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const harvestBtn = document.getElementById('harvestBtn');
+  const scoreDisplay = document.getElementById('scoreDisplay');
+  const logFeedWrapper = document.getElementById('logFeedWrapper');
+
+  // Modals
+  const quizBackdrop = document.getElementById('quizBackdrop');
+  const quizOptions = document.getElementById('quizOptions');
+  const quizQuestion = document.getElementById('quizQuestion');
+  const quizResult = document.getElementById('quizResult');
+  const closeQuiz = document.getElementById('closeQuiz');
+  const modalMainMenuBtn = document.getElementById('modalMainMenuBtn'); // NEW
+
+  const contamBackdrop = document.getElementById('contamBackdrop');
+  const contamResult = document.getElementById('contamResult');
+  const contamOptions = document.getElementById('contamOptions');
+
+  const phageBackdrop = document.getElementById('phageBackdrop');
+  const phageResult = document.getElementById('phageResult');
+  const phageOptions = document.getElementById('phageOptions');
+
+  // NEW: Screen Elements
+  const startScreen = document.getElementById('startScreen');
+  const howToPlayScreen = document.getElementById('howToPlayScreen');
+  const gameContainer = document.getElementById('gameContainer');
+  const playBtn = document.getElementById('playBtn');
+  const howToPlayBtn = document.getElementById('howToPlayBtn');
+  const backBtn = document.getElementById('backBtn');
+
+  // Quiz questions (Expanded)
+  const quizBank = [
+    { q: "The uptake of naked DNA by bacteria is called...?", opts:["Transformation","Transduction","Conjugation","Translation"], a:0 },
+    { q: "Which stains purple in Gram staining?", opts:["Gram-positive","Gram-negative","Viruses","Fungi"], a:0 },
+    { q: "Which device is commonly used for sterilization with heat and pressure?", opts:["Autoclave","Refrigerator","Centrifuge","Incubator"], a:0 },
+    { q: "Main component of bacterial cell wall is...?", opts:["Peptidoglycan","Chitin","Cellulose","Keratin"], a:0 },
+    { q: "Which phase follows Log (Exponential) phase?", opts:["Stationary Phase","Lag Phase","Death Phase","No Change"], a:0 },
+    { q: "What is horizontal gene transfer in bacteria?", opts:["Parent to offspring","Transfer between unrelated bacteria","Bacteria to virus","Virus to fungus"], a:1 },
+    { q: "Organisms that require high salt concentrations are called...?", opts:["Halophiles","Thermophiles","Acidophiles","Psychrophiles"], a:0 },
+    { q: "Which of these is an example of a fungus?", opts:["E. coli","Yeast","Staphylococcus","Influenza Virus"], a:1 },
+    { q: "The 'powerhouse' of a eukaryotic cell is the...?", opts:["Nucleus","Ribosome","Mitochondrion","Chloroplast"], a:2 },
+    { q: "What does 'anaerobic' mean?", opts:["Requires oxygen","Does not require oxygen","Requires light","Requires cold"], a:1 }
+  ];
+  let currentQuiz = null;
+
+  // Phase info mapping
+  const PHASE_INFO = {
+    'Lag Phase': 'Bacteria are adapting and preparing to multiply.',
+    'Log Phase': 'Exponential growth — the culture is rapidly multiplying.',
+    'Stationary Phase': 'Nutrients low. Growth levels off. Ready to harvest!',
+    'Death Phase': 'More cells are dying than being produced. Culture failing.',
+    'Harvested': 'Culture harvested. Game over.'
+  };
+  
+  // ---- Helper Functions ----
+  
+  // Add to the event log
+  function addLog(message, type = 'normal') {
+    const p = document.createElement('p');
+    p.className = 'log-message';
+    if (type !== 'normal') {
+      p.classList.add(type);
+    }
+    p.textContent = [H:${state.hour}] ${message};
+    logFeedWrapper.appendChild(p);
+    // Auto-scroll to bottom
+    logFeedWrapper.scrollTop = logFeedWrapper.scrollHeight;
+  }
+  
+  // Show/hide modals
+  function setModalVisible(modalElement, visible) {
+    if (visible) {
+      modalElement.classList.add('visible');
+      modalElement.setAttribute('aria-hidden', 'false');
+    } else {
+      modalElement.classList.remove('visible');
+      modalElement.setAttribute('aria-hidden', 'true');
+    }
+  }
+  
+  // NEW: Generic function to show end-game modal
+  function showEndGameModal(title, message, score = null) {
+    quizTitle.textContent = title;
+    let scoreHTML = score !== null ? <div style="text-align: center; font-size: 1.2rem; font-weight: 700;">Final Score: ${score}</div> : '';
+    
+    quizOptions.innerHTML = `${scoreHTML}
+      <p style="text-align: center; margin-top: 8px;">${message}</p>`;
+    
+    quizResult.textContent = '';
+    // Show the "Main Menu" button and hide the "Close" button
+    closeQuiz.style.display = 'none';
+    modalMainMenuBtn.style.display = 'inline-block';
+    
+    setModalVisible(quizBackdrop, true);
+  }
+
+  // ---- Core Game Logic ----
+
+  // Update all visuals
+  function updateDisplay(){
+    nutriFill.style.width = state.nutrient + '%';
+    wasteFill.style.width = state.waste + '%';
+    nutriLabel.textContent = Math.round(state.nutrient) + '%';
+    wasteLabel.textContent = Math.round(state.waste) + '%';
+    phaseDisplay.textContent = state.phase;
+    phaseInfo.textContent = PHASE_INFO[state.phase] || '';
+    hourCounter.textContent = state.hour;
+    scoreDisplay.textContent = state.score;
+
+    // adjust culture cloud look
+    const baseOpacity = 0.28 + Math.min(0.6, (100 - state.nutrient) / 140 + state.waste/220);
+    cultureCloud.style.background = linear-gradient(180deg, rgba(255,255,255,${0.6+ (state.phase==='Log Phase'?0.08:0)}), rgba(255,255,255,0.12));
+    cultureCloud.style.opacity = baseOpacity;
+    
+    // Game over lock
+    if (state.gameOver) {
+      waitBtn.disabled = true;
+      addBtn.disabled = true;
+      harvestBtn.disabled = true;
+      harvestBtn.style.display = 'inline-block'; // Keep it visible
+      if(state.phase === 'Death Phase') {
+         cultureCloud.style.opacity = 0.1;
+         // Show game over modal for death
+         showEndGameModal('💀 Culture Died 💀', 'Your culture ran out of resources or succumbed to waste. Better luck next time!');
+      }
+    } else {
+      waitBtn.disabled = false;
+      addBtn.disabled = false;
+      // Can only harvest in Stationary Phase
+      harvestBtn.disabled = (state.phase !== 'Stationary Phase');
+    }
+  }
+
+  // Main game tick
+  function handleWait(){
+    if (state.gameOver || state.eventActive) return;
+
+    // Check for random events (15% chance per click)
+    if (Math.random() < 0.15 && !state.eventActive && state.phase === 'Log Phase') {
+      state.eventActive = true;
+      if (Math.random() < 0.5) { // 50/50 split
+        showContamination();
+      } else {
+        showPhageAttack();
+      }
+      return; // Stop processing this turn until event is handled
+    }
+    
+    addLog("Time advances...");
+    state.hour += 1;
+
+    // Lag -> after 3 waits -> Log
+    if (state.phase === 'Lag Phase') {
+      state.lagClicks += 1;
+      if (state.lagClicks >=3) {
+        state.phase = 'Log Phase';
+        addLog("Exponential growth begins! Culture is multiplying.", 'good');
+      } else {
+        phaseDisplay.textContent = Lag Phase (Preparing ${state.lagClicks}/3);
+        addLog(Culture is adapting... (${state.lagClicks}/3));
+      }
+    }
+    // Log Phase: nutrients -20, waste +18
+    else if (state.phase === 'Log Phase') {
+      state.nutrient = Math.max(0, state.nutrient - 20);
+      state.waste = Math.min(100, state.waste + 18);
+      addLog("Culture consumed 20% nutrients, produced 18% waste.");
+
+      if (state.waste >= 100) {
+        state.phase = 'Stationary Phase';
+        state.stationaryClicks = 0;
+        addLog("Waste high. Growth is slowing. Entered Stationary Phase.", 'event');
+      } else if (state.nutrient <= 0) {
+        state.phase = 'Death Phase';
+        state.gameOver = true;
+        addLog("Nutrients depleted! Culture has entered Death Phase.", 'bad');
+      }
+    }
+    // Stationary -> after 3 waits -> Death
+    else if (state.phase === 'Stationary Phase') {
+      state.stationaryClicks += 1;
+      if (state.stationaryClicks >= 3) {
+        state.phase = 'Death Phase';
+        state.gameOver = true;
+        addLog("Toxicity high. Culture has entered Death Phase.", 'bad');
+      } else {
+        phaseDisplay.textContent = Stationary Phase (Holding ${state.stationaryClicks}/3);
+        addLog(Culture holding... (${state.stationaryClicks}/3));
+      }
+    }
+    // Death (should lock)
+    else if (state.phase === 'Death Phase') {
+      state.gameOver = true;
+    }
+
+    updateDisplay();
+  }
+
+  // Show contamination modal
+  function showContamination(){
+    setModalVisible(contamBackdrop, true);
+    contamResult.textContent = '';
+    // Enable buttons
+    Array.from(contamOptions.children).forEach(b => b.disabled = false);
+    addLog("Contamination event! A fungus is spotted.", 'event');
+  }
+
+  // Handle contamination choices
+  function handleContam(choice){
+    if (!state.eventActive) return;
+    Array.from(contamOptions.children).forEach(b => b.disabled = true);
+
+    if (choice === 'antifungal') {
+      contamResult.innerHTML = '<div class="result-box good">✅ Good! Fungus removed. Culture is safe.</div>';
+      addLog("Fungus removed successfully.", 'good');
+    } else {
+      contamResult.innerHTML = '<div class="result-box bad">❌ That was not effective. Nutrients halved.</div>';
+      addLog("Contamination response failed! Nutrients lost.", 'bad');
+      state.nutrient = Math.max(0, Math.floor(state.nutrient * 0.5));
+      updateDisplay();
+    }
+
+    // close after 2s
+    setTimeout(()=> {
+      setModalVisible(contamBackdrop, false);
+      state.eventActive = false;
+    }, 1800);
+  }
+  
+  // Phage Attack Logic
+  function showPhageAttack(){
+    setModalVisible(phageBackdrop, true);
+    phageResult.textContent = '';
+    // Enable buttons
+    Array.from(phageOptions.children).forEach(b => b.disabled = false);
+    addLog("Phage attack detected! Culture is being infected.", 'event');
+  }
+
+  function handlePhage(choice) {
+    if (!state.eventActive) return;
+    Array.from(phageOptions.children).forEach(b => b.disabled = true);
+    
+    if (choice === 'serum') {
+      phageResult.innerHTML = '<div class="result-box good">✅ Success! The anti-phage serum neutralized the virus.</div>';
+      addLog("Anti-phage serum worked.", 'good');
+    } else if (choice === 'mutate') {
+      if (Math.random() < 0.5) {
+        phageResult.innerHTML = '<div class="result-box good">🎉 Risky bet paid off! The culture mutated and is now phage-resistant.</div>';
+        addLog("Mutation successful! Phage resistant.", 'good');
+      } else {
+        phageResult.innerHTML = '<div class="result-box bad">🔥 Mutation failed! The culture is destabilized. Waste doubled.</div>';
+        addLog("Mutation failed! Waste levels spiked.", 'bad');
+        state.waste = Math.min(100, state.waste + 50); // Significant penalty
+      }
+    } else { // ignore
+      phageResult.innerHTML = '<div class="result-box bad">❌ Ignored! The phage decimated the culture. Lost 40% nutrients.</div>';
+      addLog("Ignored phage. Culture decimated.", 'bad');
+      state.nutrient = Math.max(0, state.nutrient - 40);
+    }
+    
+    updateDisplay();
+    
+    setTimeout(()=> {
+      setModalVisible(phageBackdrop, false);
+      state.eventActive = false;
+    }, 2200);
+  }
+
+
+  // Quiz logic
+  function openQuiz(){
+    if (state.eventActive || state.gameOver) return;
+    
+    // Make sure end-game buttons are hidden
+    closeQuiz.style.display = 'inline-block';
+    modalMainMenuBtn.style.display = 'none';
+    
+    // pick random question
+    currentQuiz = quizBank[Math.floor(Math.random() * quizBank.length)];
+    quizTitle.textContent = '🧪 Micro Quiz';
+    quizQuestion.textContent = currentQuiz.q;
+    quizOptions.innerHTML = '';
+    quizResult.textContent = '';
+
+    currentQuiz.opts.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.textContent = opt;
+      btn.onclick = () => SelectQuizAnswer(idx, btn);
+      quizOptions.appendChild(btn);
+    });
+
+    setModalVisible(quizBackdrop, true);
+  }
+
+  function SelectQuizAnswer(idx, btn){
+    // disable all
+    Array.from(quizOptions.children).forEach(b => b.disabled = true);
+    // correct?
+    if (idx === currentQuiz.a) {
+      btn.classList.add('correct');
+      quizResult.innerHTML = '<div class="result-box good">✅ Correct — Nutrients refilled to 100%</div>';
+      state.nutrient = 100;
+      addLog("Quiz correct! Nutrients refilled.", 'good');
+      updateDisplay();
+    } else {
+      btn.classList.add('wrong');
+      quizResult.innerHTML = '<div class="result-box bad">❌ Wrong — No nutrients gained</div>';
+      addLog("Quiz incorrect. No nutrients added.", 'bad');
+    }
+    // auto-close
+    setTimeout(() => {
+      setModalVisible(quizBackdrop, false);
+      quizResult.textContent = '';
+    }, 1400);
+  }
+
+  // Harvest culture
+  function harvestCulture(){
+    if (state.phase !== 'Stationary Phase' || state.gameOver) {
+      addLog("Cannot harvest yet. Wait for Stationary Phase.", 'bad');
+      return;
+    }
+    
+    // Calculate score
+    let baseScore = 5000;
+    let wastePenalty = state.waste * 20; // Max 2000 penalty
+    let timePenalty = state.hour * 10;   // Higher penalty for taking long
+    let finalScore = Math.max(0, Math.round(baseScore - wastePenalty - timePenalty));
+    
+    state.score = finalScore;
+    state.gameOver = true;
+    state.phase = 'Harvested';
+
+    addLog(Harvest successful! Final Score: ${finalScore}, 'good');
+    
+    // Show a success message
+    showEndGameModal(
+      '🏆 Culture Harvested! 🏆',
+      'You balanced growth and waste perfectly. Great job, Culture Keeper!',
+      finalScore
+    );
+    
+    updateDisplay();
+  }
+
+  // Reset game
+  function resetGame(){
+    state.phase = 'Lag Phase'; state.hour = 0;
+    state.nutrient = 100; state.waste = 0; state.gameOver = false;
+    state.lagClicks = 0; state.stationaryClicks = 0; state.eventActive = false;
+    state.score = 0;
+    
+    logFeedWrapper.innerHTML = ''; // Clear the log
+    
+    // Reset modal buttons to default
+    closeQuiz.style.display = 'inline-block';
+    modalMainMenuBtn.style.display = 'none';
+    
+    updateDisplay();
+  }
+
+  // ---- Event Listeners ----
+  
+  // Game Listeners
+  waitBtn.addEventListener('click', handleWait);
+  addBtn.addEventListener('click', openQuiz);
+  resetBtn.addEventListener('click', resetGame); // In-game reset
+  harvestBtn.addEventListener('click', harvestCulture);
+
+  // Modal Listeners
+  closeQuiz.addEventListener('click', ()=>{ setModalVisible(quizBackdrop, false); });
+  // Click outside quiz modal to close (but not event modals)
+  quizBackdrop.addEventListener('click', (e) => { 
+    if (e.target === quizBackdrop) { 
+      // Only close if it's a quiz (close button visible) and not an end-game screen
+      if (closeQuiz.style.display !== 'none') {
+        setModalVisible(quizBackdrop, false); 
+      }
+    } 
+  });
+  
+  // NEW: Screen & Menu Listeners
+  playBtn.addEventListener('click', () => {
+    startScreen.style.display = 'none';
+    gameContainer.style.display = 'block';
+    resetGame(); // Reset game on play
+    addLog("Welcome, Culture Keeper! Click 'Wait' to begin.");
+  });
+  
+  howToPlayBtn.addEventListener('click', () => {
+    startScreen.style.display = 'none';
+    howToPlayScreen.style.display = 'flex';
+  });
+  
+  backBtn.addEventListener('click', () => {
+    howToPlayScreen.style.display = 'none';
+    startScreen.style.display = 'flex';
+  });
+  
+  modalMainMenuBtn.addEventListener('click', () => {
+    setModalVisible(quizBackdrop, false);
+    gameContainer.style.display = 'none';
+    startScreen.style.display = 'flex';
+    resetGame(); // Reset game state when returning to menu
+  });
+  
+  // No initial calls to updateDisplay() or addLog()
+  // Game starts on "Play" button click.
+
+</script>
+</body>
+</html>
